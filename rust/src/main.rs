@@ -4,14 +4,11 @@ mod functions;
 mod payload;
 
 fn main() {
-    let started = functions::timestamp();
+    let started = functions::Rai::timestamp();
     let task = async {
-        let response =
-            functions::hello_world(payload::PayloadRequest {
-                platform: String::from("Rust"),
-            }).await;
-        println!("{}", response.message);
-        let time_spent = response.timestamp - started;
+        let response = functions::Rai::hello_world(String::from("Rust")).await;
+        println!("{}", response);
+        let time_spent = functions::Rai::timestamp() - started;
         println!("Duration: {} milliseconds", time_spent);
     };
     block_on(task);
