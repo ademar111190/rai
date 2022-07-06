@@ -14,16 +14,24 @@ android {
         versionName "1.0"
     }
 
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/libs']
+        }
+    }
+
     buildTypes {
         all {
             minifyEnabled true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -34,4 +42,47 @@ dependencies {
     implementation "androidx.appcompat:appcompat:1.4.2"
     implementation "com.google.android.material:material:1.6.1"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+}
+
+def rustBasePath = "../../rust"
+def archTriplets = [
+        "armeabi-v7a": "armv7-linux-androideabi",
+        "arm64-v8a"  : "aarch64-linux-android",
+        "x86"        : "i686-linux-android",
+        "x86_64"     : "x86_64-linux-android",
+]
+
+archTriplets.each { arch, target ->
+    project.ext.cargo_target_directory = rustBasePath + "/target"
+    // Build with cargo
+    tasks.create(name: "cargo-build-${arch}", type: Exec, description: "Building core for ${arch}") {
+        workingDir rustBasePath
+        commandLine "cargo", "build", "--target=${target}", "--release"
+    }
+    // Sync shared native dependencies
+    tasks.create(name: "sync-rust-deps-${arch}", type: Sync, dependsOn: "cargo-build-${arch}") {
+        from "${rustBasePath}/src/libs/${arch}"
+        include "*.so"
+        into "src/main/libs/${arch}"
+    }
+    // Copy build libs into this app"s libs directory
+    tasks.create(name: "rust-deploy-${arch}", type: Copy, dependsOn: "sync-rust-deps-${arch}", description: "Copy rust libs for (${arch}) to jniLibs") {
+        from "${project.ext.cargo_target_directory}/${target}/release"
+        include "*.so"
+        into "src/main/libs/${arch}"
+    }
+
+    // Hook up tasks to execute before building java
+    tasks.withType(JavaCompile) {
+        compileTask -> compileTask.dependsOn "rust-deploy-${arch}"
+    }
+    preBuild.dependsOn "rust-deploy-${arch}"
+
+    // Hook up clean tasks
+    tasks.create(name: "clean-${arch}", type: Delete, description: "Deleting built libs for ${arch}", dependsOn: "cargo-output-dir-${arch}") {
+        delete fileTree("${project.ext.cargo_target_directory}/${target}/release") {
+            include "*.so"
+        }
+    }
+    clean.dependsOn "clean-${arch}"
 }

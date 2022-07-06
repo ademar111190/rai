@@ -1,12 +1,13 @@
 use futures::executor::block_on;
 
-mod rai;
+mod functions;
+mod payload;
 
 fn main() {
-    let started = rai::functions::timestamp();
+    let started = functions::timestamp();
     let task = async {
         let response =
-            rai::functions::hello_world(rai::payload::PayloadRequest {
+            functions::hello_world(payload::PayloadRequest {
                 platform: String::from("Rust"),
             }).await;
         println!("{}", response.message);

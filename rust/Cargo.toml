@@ -5,8 +5,18 @@ edition = "2021"
 
 [lib]
 name = "rai"
-path = "src/rai"
+path = "src/rai.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
 futures = "0.3.21"
+jni-sys = "0.3.0"
+rifgen = "0.1.51"
+#logging
+android_logger = "0.11.0"
+log = "0.4.17"
+log-panics = "2.0.0"
+
+[build-dependencies]
+flapigen = "0.6.0-pre9"
+rifgen = "0.1.51"

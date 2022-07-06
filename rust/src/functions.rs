@@ -1,13 +1,13 @@
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use crate::rai::payload::{PayloadRequest, PayloadResponse};
+use crate::payload::{PayloadRequest, PayloadResponse};
 
-pub fn timestamp() -> u128 {
+pub fn timestamp() -> u64 {
     return SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
-        .as_millis();
+        .as_secs();
 }
 
 pub async fn hello_world(request: PayloadRequest) -> PayloadResponse {
@@ -23,8 +23,8 @@ pub async fn hello_world(request: PayloadRequest) -> PayloadResponse {
 #[cfg(test)]
 mod tests {
     use crate::block_on;
-    use crate::rai::functions::{hello_world, timestamp};
-    use crate::rai::payload::PayloadRequest;
+    use crate::functions::{hello_world, timestamp};
+    use crate::payload::PayloadRequest;
 
     #[test]
     fn timestamp_returns_bigger_than_zero() {

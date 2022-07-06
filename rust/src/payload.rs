@@ -6,12 +6,12 @@ pub struct PayloadRequest {
 #[derive(Eq, PartialEq, Debug)]
 pub struct PayloadResponse {
     pub message: String,
-    pub timestamp: u128,
+    pub timestamp: u64,
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::rai::payload::{PayloadRequest, PayloadResponse};
+    use crate::payload::{PayloadRequest, PayloadResponse};
 
     #[test]
     fn payload_request_equals() {
