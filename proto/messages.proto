@@ -1,0 +1,11 @@
+syntax = "proto3";
+package rai;
+
+message PayloadRequest {
+    string platform = 1;
+}
+
+message PayloadResponse {
+    string msg = 1;
+    int64 timestamp = 2;
+}

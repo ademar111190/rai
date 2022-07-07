@@ -1,15 +1,17 @@
-use futures::executor::block_on;
+use protobuf::Message;
+
+use crate::messages::{PayloadRequest, PayloadResponse};
 
 mod functions;
-mod payload;
+mod messages;
 
 fn main() {
-    let started = functions::Rai::timestamp();
-    let task = async {
-        let response = functions::Rai::hello_world(String::from("Rust")).await;
-        println!("{}", response);
-        let time_spent = functions::Rai::timestamp() - started;
-        println!("Duration: {} milliseconds", time_spent);
-    };
-    block_on(task);
+    let request = PayloadRequest {
+        platform: String::from("Rust"),
+        special_fields: Default::default(),
+    }.write_to_bytes().unwrap();
+    let bytes: &[u8] = request.as_slice();
+    let result = functions::Rai::hello_world(bytes);
+    let response = PayloadResponse::parse_from_bytes(result.as_slice()).unwrap();
+    println!("{}", response);
 }
